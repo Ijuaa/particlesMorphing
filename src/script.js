@@ -68,7 +68,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(0, 0, 8 * 2);
+camera.position.set(1, 1, 8 * 2);
 scene.add(camera);
 
 // Controls
@@ -97,7 +97,7 @@ renderer.setClearColor(debugObject.clearColor);
  */
 let particles = null;
 
-gltfLoader.load("./models.glb", (gltf) => {
+gltfLoader.load("./pierreColpart.glb", (gltf) => {
   particles = {};
   particles.index = 0;
 
@@ -148,7 +148,7 @@ gltfLoader.load("./models.glb", (gltf) => {
     "position",
     particles.positions[particles.index]
   );
-  particles.geometry.setAttribute("aPositionTarget", particles.positions[3]);
+  particles.geometry.setAttribute("aPositionTarget", particles.positions[1]);
   particles.geometry.setAttribute(
     "aSize",
     new THREE.BufferAttribute(sizesArray, 1)
@@ -163,14 +163,14 @@ gltfLoader.load("./models.glb", (gltf) => {
     vertexShader: particlesVertexShader,
     fragmentShader: particlesFragmentShader,
     uniforms: {
-      uSize: new THREE.Uniform(0.4),
+      uSize: new THREE.Uniform(0.08),
       uResolution: new THREE.Uniform(
         new THREE.Vector2(
           sizes.width * sizes.pixelRatio,
           sizes.height * sizes.pixelRatio
         )
       ),
-      uProgress: new THREE.Uniform(0),
+      uProgress: new THREE.Uniform(-2),
       uColorA: new THREE.Uniform(new THREE.Color(particles.colorA)),
       uColorB: new THREE.Uniform(new THREE.Color(particles.colorB)),
     },
@@ -180,37 +180,87 @@ gltfLoader.load("./models.glb", (gltf) => {
 
   // Points
   particles.points = new THREE.Points(particles.geometry, particles.material);
+  particles.points.rotation.x = Math.PI * 0.5;
+  particles.points.position.set(-2.5, 0, 8);
   scene.add(particles.points);
 
   // Methods
-  particles.morph = (index) => {
-    // Update attributes
-    particles.geometry.attributes.position =
-      particles.positions[particles.index];
-    particles.geometry.attributes.aPositionTarget = particles.positions[index];
+  // particles.morph = (index) => {
+  //   // Update attributes
+  //   particles.geometry.attributes.position =
+  //     particles.positions[particles.index];
+  //   particles.geometry.attributes.aPositionTarget = particles.positions[index];
 
-    // Animate uProgress
-    gsap.fromTo(
+  //   // Animate uProgress
+  //   gsap.fromTo(
+  //     particles.material.uniforms.uProgress,
+  //     { value: -2 },
+  //     { value: 1, duration: 10, ease: "linear" }
+  //   );
+
+  //   // Save index
+  //   particles.index = index;
+  // };
+  // particles.morph0 = () => {
+  //   particles.morph(0);
+  // };
+  // particles.morph1 = () => {
+  //   particles.morph(1);
+  // };
+  // particles.morph2 = () => {
+  //   particles.morph(2);
+  // };
+  // particles.morph3 = () => {
+  //   particles.morph(3);
+  // };
+
+  particles.animate = () => {
+    let timeline = gsap.timeline();
+  
+    // Animation de uProgress de -7 à 0 sur 5 secondes avec une facilité linéaire
+    // En même temps, animer la position de la caméra
+    timeline.fromTo(
       particles.material.uniforms.uProgress,
-      { value: 0 },
-      { value: 1, duration: 3, ease: "linear" }
+      { value: -7 },
+      { value: 0, duration: 5, ease: "linear" }
+    ).to(
+      camera.position,
+      { x: 1, duration: 5, ease: "linear" },
+      "<" // Commence cette animation en même temps que l'animation précédente
     );
+  
+    // Pause de 1.5 secondes
+    timeline.to({}, { duration: 1.5 });
+  
+    // Animation de uProgress de 0 à 1 sur 2 secondes avec une facilité linéaire
+    // En même temps, animer la position de la caméra
+    timeline.to(
+      particles.material.uniforms.uProgress,
+      { value: 1, duration: 2, ease: "linear" }
+    ).to(
+      camera.position,
+      { x: -1.5, z: 14, duration: 2, ease: "linear" },
+      "<" // Commence cette animation en même temps que l'animation précédente
+    );
+  
+    // Pause de 1.5 secondes
+    timeline.to({}, { duration: 1.5 });
+  
+    // Animation de uProgress de 1 à 20 sur 50 secondes avec une facilité "power4"
+    // En même temps, animer la position de la caméra
+    timeline.to(
+      particles.material.uniforms.uProgress,
+      { value: 20, duration: 50, ease: "power4" }
+    ).to(
+      camera.position,
+      { x: 3, duration: 50, ease: "power4" },
+      "<" // Commence cette animation en même temps que l'animation précédente
+    );
+  
+    // Lancement de la timeline
+    timeline.play();
+  }
 
-    // Save index
-    particles.index = index;
-  };
-  particles.morph0 = () => {
-    particles.morph(0);
-  };
-  particles.morph1 = () => {
-    particles.morph(1);
-  };
-  particles.morph2 = () => {
-    particles.morph(2);
-  };
-  particles.morph3 = () => {
-    particles.morph(3);
-  };
 
   // Tweaks
   gui
@@ -220,10 +270,12 @@ gltfLoader.load("./models.glb", (gltf) => {
     .step(0.0001)
     .listen();
 
-  gui.add(particles, "morph0");
-  gui.add(particles, "morph1");
-  gui.add(particles, "morph2");
-  gui.add(particles, "morph3");
+  // gui.add(particles, "morph0");
+  // gui.add(particles, "morph1");
+  // gui.add(particles, "morph2");
+  // gui.add(particles, "morph3");
+
+  gui.add(particles, "animate");
 
   gui.addColor(particles, "colorA").onChange(() => {
     particles.material.uniforms.uColorA.value.set(particles.colorA);
@@ -231,15 +283,30 @@ gltfLoader.load("./models.glb", (gltf) => {
   gui.addColor(particles, "colorB").onChange(() => {
     particles.material.uniforms.uColorB.value.set(particles.colorB);
   });
+  
 });
 
+const axesHelper = new THREE.AxesHelper(5);
+// scene.add(axesHelper);
 /**
  * Animate
  */
+const clock = new THREE.Clock();
 const tick = () => {
+  const elapsedTime = clock.getElapsedTime();
+
   // Update controls
   controls.update();
 
+  // Update particles
+  // if (particles) {
+  //   particles.material.uniforms.uProgress.value = elapsedTime * 0.1;
+
+  //   // Inverser l'animation lorsque uProgress dépasse 1 ou -1
+  //   if (particles.material.uniforms.uProgress.value > 1 || particles.material.uniforms.uProgress.value < -1) {
+  //     particles.material.uniforms.uProgress.value *= -1 * elapsedTime * 0.2;
+  //   }
+  // }
   // Render normal scene
   renderer.render(scene, camera);
 

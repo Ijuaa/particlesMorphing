@@ -23,7 +23,7 @@ void main()
     float delay = (1.0 - duration) * noise;
     float end = delay + duration;
     float progress = smoothstep(delay, end, uProgress);
-    vec3 mixedPosition = mix(position, aPositionTarget, progress);
+    vec3 mixedPosition = mix(position, aPositionTarget, uProgress);
 
     // Final position
     vec4 modelPosition = modelMatrix * vec4(mixedPosition, 1.0);
