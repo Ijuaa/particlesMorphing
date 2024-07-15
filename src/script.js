@@ -68,7 +68,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(1, 1, 8 * 2);
+camera.position.set(1, 1, 14);
 scene.add(camera);
 
 // Controls
@@ -156,8 +156,8 @@ gltfLoader.load("./pierreColpart.glb", (gltf) => {
   //   particles.geometry.setIndex(null);
 
   // Material
-  particles.colorA = "#f16304";
-  particles.colorB = "#129b67";
+  particles.colorA = "#ff0000";
+  particles.colorB = "#00ff9d";
 
   particles.material = new THREE.ShaderMaterial({
     vertexShader: particlesVertexShader,
@@ -239,7 +239,7 @@ gltfLoader.load("./pierreColpart.glb", (gltf) => {
       { value: 1, duration: 2, ease: "linear" }
     ).to(
       camera.position,
-      { x: -1.5, z: 14, duration: 2, ease: "linear" },
+      { x: -1, z: 14, duration: 2, ease: "linear" },
       "<" // Commence cette animation en même temps que l'animation précédente
     );
   
