@@ -4,7 +4,6 @@ uniform float uProgress;
 uniform vec3 uColorA;
 uniform vec3 uColorB;
 
-attribute vec3 aPositionTarget;
 attribute float aSize;
 
 varying vec3 vColor;
@@ -13,17 +12,15 @@ varying vec3 vColor;
 
 void main()
 {
-    // Mixed position 
-    float noiseOrigin = simplexNoise3d(position * 0.2);
-    float noiseTarget = simplexNoise3d(aPositionTarget* 0.2);
-    float noise = mix(noiseOrigin, noiseTarget, uProgress);
-    noise = smoothstep(-1.0, 1.0, noise);
+    // Generate a random initial position based on the vertex ID
+    float randX = fract(sin(dot(position.xyz, vec3(12.9898, 78.233, 45.164))) * 43758.5453) * 20.0 - 10.0;
+    float randY = fract(sin(dot(position.yzx, vec3(12.9898, 78.233, 45.164))) * 43758.5453) * 20.0 - 10.0;
+    float randZ = fract(sin(dot(position.zxy, vec3(12.9898, 78.233, 45.164))) * 43758.5453) * 20.0 - 10.0;
+    vec3 startPosition = vec3(randX, randY, randZ); // Initial random position in a 20x20x20 cube
 
-    float duration = 0.3;
-    float delay = (1.0 - duration) * noise;
-    float end = delay + duration;
-    float progress = smoothstep(delay, end, uProgress);
-    vec3 mixedPosition = mix(position, aPositionTarget, progress);
+    // Compute mixed position based on progress
+    float progress = smoothstep(-10.0, 1.0, uProgress);
+    vec3 mixedPosition = mix(startPosition, position, progress);
 
     // Final position
     vec4 modelPosition = modelMatrix * vec4(mixedPosition, 1.0);
@@ -33,8 +30,8 @@ void main()
 
     // Point size
     gl_PointSize = aSize * uSize * uResolution.y;
-    gl_PointSize *= (1.0 / - viewPosition.z);
+    gl_PointSize *= (1.0 / -viewPosition.z);
 
     // Varyings
-    vColor =  mix(uColorA, uColorB, noise);
+    vColor = mix(uColorA, uColorB, progress);
 }
