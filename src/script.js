@@ -222,7 +222,7 @@ gltfLoader.load("./pierreColpart.glb", (gltf) => {
     timeline.fromTo(
       particles.material.uniforms.uProgress,
       { value: -7 },
-      { value: 0, duration: 5, ease: "linear" }
+      { value: 0, duration: 3, ease: "sine" }
     ).to(
       camera.position,
       { x: 1, duration: 5, ease: "linear" },
@@ -236,7 +236,7 @@ gltfLoader.load("./pierreColpart.glb", (gltf) => {
     // En même temps, animer la position de la caméra
     timeline.to(
       particles.material.uniforms.uProgress,
-      { value: 1, duration: 2, ease: "linear" }
+      { value: 1, duration: 2, ease: "sine" }
     ).to(
       camera.position,
       { x: -1, z: 14, duration: 2, ease: "linear" },
